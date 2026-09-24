@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -90,7 +91,9 @@ fun IMCscreen (modifier: Modifier = Modifier) {
     val focusManager = LocalFocusManager.current
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.White)
     ) {
         Box(
             modifier = Modifier.fillMaxSize()
@@ -170,10 +173,12 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                                     unfocusedBorderColor = colorResource(R.color.cor_app),
                                     cursorColor = colorResource(R.color.cor_app)
                                 ),
+                                textStyle = TextStyle(
+                                    color = Color.Black
+                                ),
                                 placeholder = {
                                     Text(
-                                        text = "Escreva em cm",
-                                        color = Color.Gray
+                                        text = "Escreva em cm"
                                     )
                                 },
                                 shape = CardDefaults.shape
@@ -187,10 +192,12 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                                 label = {
                                     Text(text = "Peso")
                                 },
+                                textStyle = TextStyle(
+                                    color = Color.Black
+                                ),
                                 placeholder = {
                                     Text(
-                                        text = "Escreva seu peso atual",
-                                        color = Color.Gray
+                                        text = "Escreva seu peso atual"
                                     )
                                 },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -200,6 +207,7 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                                     unfocusedBorderColor = colorResource(R.color.cor_app),
                                     cursorColor = colorResource(R.color.cor_app)
                                 ),
+
                                 shape = CardDefaults.shape
                             )
 
@@ -220,14 +228,14 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                                         corCard = determinarCorImc(imc)
                                     },
                                     modifier = Modifier
-                                        .width(140.dp)
+                                        .width(120.dp)
                                         .height(50.dp),
                                     colors = ButtonDefaults.buttonColors(colorResource(R.color.cor_app))
                                 ) {
                                     Text(
                                         text = "CALCULAR",
                                         color = Color.White,
-                                        fontSize = 18.sp
+                                        fontSize = 15.sp
                                     )
                                 }
 
@@ -241,14 +249,14 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                                         alturaFocusRequester.requestFocus()
                                     },  // -- limpa os campos --
                                     modifier = Modifier
-                                        .width(140.dp)
+                                        .width(120.dp)
                                         .height(50.dp),
                                     colors = ButtonDefaults.buttonColors(colorResource(R.color.cor_app)),
                                 ) {
                                     Text(
                                         text = "LIMPAR",
                                         color = Color.White,
-                                        fontSize = 18.sp
+                                        fontSize = 15.sp
                                     )
 
                                 }
