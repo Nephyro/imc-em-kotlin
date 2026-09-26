@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,14 +35,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -87,8 +90,20 @@ fun IMCscreen (modifier: Modifier = Modifier) {
         mutableStateOf(Color(0xFF56C439))
     }
 
-    val alturaFocusRequester = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
+    var alturaError by remember {
+        mutableStateOf(false)
+    }
+
+    var pesoError by remember {
+        mutableStateOf(false)
+    }
+
+    // Estados do Toast
+    var toastMessage by remember { mutableStateOf<String?>(null) }
+    var toastIsError by remember { mutableStateOf(false) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current    // Controle do teclado
+    val focusManager = LocalFocusManager.current    // Gerenciador de foco
 
     Column(
         modifier = modifier
@@ -126,7 +141,6 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                     )
                 }
 
-
 //              -- formulário --
                 Column(
                     modifier = Modifier.fillMaxWidth()
@@ -136,7 +150,7 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(300.dp)
+                            .wrapContentHeight() // Ajusta a altura automaticamente para não cortar o erro
                             .offset(y = (-30).dp),
                         colors = CardDefaults.cardColors(
                             containerColor = Color(0xFFF9F6F6)
@@ -145,7 +159,7 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                     ) {
                         Column(
                             modifier = Modifier
-                                .fillMaxSize()
+                                .fillMaxWidth()
                                 .padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -160,54 +174,82 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                             // -- campos de texto --
                             OutlinedTextField(
                                 value = altura,
-                                onValueChange = { altura = it },
-                                singleLine = true,
-                                modifier = Modifier.focusRequester(alturaFocusRequester),
-                                label = {
-                                    Text(text = "Altura")
+                                onValueChange = {
+                                    altura = it
+                                    alturaError = false
                                 },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                singleLine = true,
+                                isError = alturaError,
+                                label = { Text(text = "Altura") },
+                                placeholder = { Text(text = "Escreva em cm") },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Next
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onNext = {
+                                        focusManager.moveFocus(FocusDirection.Down)
+                                    }
+                                ),
+                                supportingText = {
+                                    if (alturaError) {
+                                        Text(
+                                            text = "Campo obrigatório",
+                                            color = Color.Red,
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                },
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = colorResource(R.color.cor_app),
                                     focusedLabelColor = colorResource(R.color.cor_app),
                                     unfocusedBorderColor = colorResource(R.color.cor_app),
-                                    cursorColor = colorResource(R.color.cor_app)
+                                    cursorColor = colorResource(R.color.cor_app),
+                                    errorBorderColor = Color.Red,
+                                    errorLabelColor = Color.Red
                                 ),
-                                textStyle = TextStyle(
-                                    color = Color.Black
-                                ),
-                                placeholder = {
-                                    Text(
-                                        text = "Escreva em cm"
-                                    )
-                                },
+                                textStyle = TextStyle(color = Color.Black),
                                 shape = CardDefaults.shape
                             )
 
                             OutlinedTextField(
                                 value = peso,
-                                onValueChange = { peso = it },
+                                onValueChange = {
+                                    peso = it
+                                    pesoError = false
+                                },
                                 singleLine = true,
-                                modifier = Modifier,
-                                label = {
-                                    Text(text = "Peso")
-                                },
-                                textStyle = TextStyle(
-                                    color = Color.Black
+                                isError = pesoError,
+                                label = { Text(text = "Peso") },
+                                placeholder = { Text(text = "Escreva seu peso atual") },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Done
                                 ),
-                                placeholder = {
-                                    Text(
-                                        text = "Escreva seu peso atual"
-                                    )
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        keyboardController?.hide()
+                                        focusManager.clearFocus()
+                                    }
+                                ),
+                                supportingText = {
+                                    if (pesoError) {
+                                        Text(
+                                            text = "Campo obrigatório",
+                                            color = Color.Red,
+                                            fontSize = 12.sp
+                                        )
+                                    }
                                 },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = colorResource(R.color.cor_app),
                                     focusedLabelColor = colorResource(R.color.cor_app),
                                     unfocusedBorderColor = colorResource(R.color.cor_app),
-                                    cursorColor = colorResource(R.color.cor_app)
+                                    cursorColor = colorResource(R.color.cor_app),
+                                    errorBorderColor = Color.Red,
+                                    errorLabelColor = Color.Red
                                 ),
-
+                                textStyle = TextStyle(color = Color.Black),
                                 shape = CardDefaults.shape
                             )
 
@@ -218,14 +260,38 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                             ) {
                                 Button(
                                     onClick = {
-                                        // Receberá os valores dos campos e calculará o IMC
-                                        imc = calcularIMC(
-                                            altura = altura.toDouble(),
-                                            peso = peso.toDouble()
-                                        )
-                                        // Determinará a categoria do IMC
-                                        categotiaImc = determinarCategoriaIMC(imc)
-                                        corCard = determinarCorImc(imc)
+                                        // Esconde o teclado e remove o foco imediatamente ao clicar
+                                        keyboardController?.hide()
+                                        focusManager.clearFocus()
+
+                                        // Valida se estão vazios ou em branco
+                                        alturaError = altura.isBlank()
+                                        pesoError = peso.isBlank()
+
+                                        // Verifica se há algum erro
+                                        if (alturaError || pesoError) {
+                                            // DISPARA TOAST DE ERRO
+                                            toastMessage = "Preencha todos os campos!"
+                                            toastIsError = true
+                                        } else {
+
+                                            val alturaVal = altura.toDoubleOrNull() ?: 0.0
+                                            val pesoVal = peso.toDoubleOrNull() ?: 0.0
+
+                                            if (alturaVal > 0) {
+                                                imc = calcularIMC(altura = alturaVal, peso = pesoVal)
+                                                categotiaImc = determinarCategoriaIMC(imc)
+                                                corCard = determinarCorImc(imc)
+
+                                                // DISPARA TOAST DE SUCESSO
+                                                toastMessage = "IMC calculado com sucesso!"
+                                                toastIsError = false
+                                            } else {
+                                                // DISPARA TOAST DE ERRO
+                                                toastMessage = "Preencha todos os campos!"
+                                                toastIsError = true
+                                            }
+                                        }
                                     },
                                     modifier = Modifier
                                         .width(120.dp)
@@ -241,13 +307,20 @@ fun IMCscreen (modifier: Modifier = Modifier) {
 
                                 Button(
                                     onClick = {
+                                        keyboardController?.hide()
+                                        focusManager.clearFocus()
                                         altura = ""
                                         peso = ""
                                         imc = 0.0
                                         categotiaImc = ""
                                         corCard = Color(0xFF56C439)
-                                        alturaFocusRequester.requestFocus()
-                                    },  // -- limpa os campos --
+                                        alturaError = false
+                                        pesoError = false
+
+                                        // DISPARA TOAST DE LIMPEZA
+                                        toastMessage = "Campos limpos!"
+                                        toastIsError = false
+                                    },
                                     modifier = Modifier
                                         .width(120.dp)
                                         .height(50.dp),
@@ -258,15 +331,10 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                                         color = Color.White,
                                         fontSize = 15.sp
                                     )
-
                                 }
-
                             }
-
                         }
-
                     }
-
 
                     // -- card resultado --
                     Card(
@@ -287,27 +355,30 @@ fun IMCscreen (modifier: Modifier = Modifier) {
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = String.format("%.1f", imc),  // Formata o IMC com 1 casa decimal
+                                text = String.format("%.1f", imc),
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
                                 fontSize = 28.sp
                             )
 
                             Text(
-                                text = categotiaImc,    // Exibe a categoria do IMC
+                                text = categotiaImc,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
                                 fontSize = 16.sp
                             )
                         }
                     }
-
-
                 }
             }
 
-
-
+            toastMessage?.let { message ->
+                CustomToast(
+                    message = message,
+                    isError = toastIsError,
+                    onDismiss = { toastMessage = null }
+                )
+            }
         }
     }
 }
